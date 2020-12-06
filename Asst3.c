@@ -4,11 +4,10 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netdb.h>
-#include <pthread.h>
 
-#define BACKLOG 5
+#define BACKLOG 1
 
-// the argument we will pass to the connection-handler threads
+// the argument we will pass to the connection-handler
 struct connection {
     struct sockaddr_storage addr;
     socklen_t addr_len;
@@ -35,7 +34,6 @@ int server(char *port)
     struct addrinfo hint, *address_list, *addr;
     struct connection *con;
     int error, sfd;
-    pthread_t tid;
 
     // initialize hints
     memset(&hint, 0, sizeof(struct addrinfo));
@@ -88,7 +86,6 @@ int server(char *port)
     // at this point sfd is bound and listening
     printf("Waiting for connection\n");
     for (;;) {
-    	// create argument struct for child thread
 		con = malloc(sizeof(struct connection));
         con->addr_len = sizeof(struct sockaddr_storage);
         	// addr_len is a read/write parameter to accept
@@ -112,19 +109,7 @@ int server(char *port)
             continue;
         }
 
-		// spin off a worker thread to handle the remote connection
-        error = pthread_create(&tid, NULL, echo, con);
-
-		// if we couldn't spin off the thread, clean up and wait for another connection
-        if (error != 0) {
-            fprintf(stderr, "Unable to create thread: %d\n", error);
-            close(con->fd);
-            free(con);
-            continue;
-        }
-
-		// otherwise, detach the thread and wait for the next connection request
-        pthread_detach(tid);
+        echo(con);
     }
 
     // never reach here
@@ -152,12 +137,27 @@ void *echo(void *arg)
 
     printf("[%s:%s] connection\n", host, port);
 
-    while ((nread = read(c->fd, buf, 100)) > 0) {
+    write(c->fd, "REG|13|Knock, knock.|", strlen("REG|13|Knock, knock.|"));
+    printf("SENT: %s\n", "REG|13|Knock, knock.|");
+    nread = read(c->fd, buf, 100)
+    if(nread > 0) {
         buf[nread] = '\0';
-        printf("[%s:%s] read %d bytes |%s|\n", host, port, nread, buf);
     }
-
-    printf("[%s:%s] got EOF\n", host, port);
+    printf("READ: %s\n", buf);
+    write(c->fd, "REG|4|Who.|", strlen("REG|4|Who.|"));
+    printf("SENT: REG|4|Who.|\n");
+    nread = read(c->fd, buf, 100)
+    if(nread > 0) {
+        buf[nread] = '\0';
+    }
+    printf("READ: %s\n", buf);
+    write(c->fd, "REG|30|I didn't know you were an owl!|", strlen("REG|30|I didn't know you were an owl!|"));
+    printf("SENT: REG|30|I didn't know you were an owl!|\n");
+    nread = read(c->fd, buf, 100)
+    if(nread > 0) {
+        buf[nread] = '\0';
+    }
+    printf("READ: %s\n", buf);
 
     close(c->fd);
     free(c);
