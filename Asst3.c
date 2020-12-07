@@ -7,6 +7,71 @@
 
 #define BACKLOG 1
 
+void errorChecker(char* buf, char* expectedStr, int crrtLength) {
+    int i = 0;
+    int lastIndex = 4;
+    for(i = 4; i < strlen(buf); i++) {
+        if(i == 4 && !(isdigit(buf[i]))) {
+            // error: format
+            break;
+        }
+        else if(isdigit(buf[i])) {
+            lastIndex = i;
+        }
+        else {
+            break;
+        }
+    }
+    if(buf[0] == 'R') {
+        if(buff[1] == 'E') {
+            if(buff[2] != 'G') {
+                //error: format
+            }
+        }
+        else {
+            //error: format
+        }
+    }
+    else if(buff[0] == 'E') {
+        if(buff[1] == 'R') {
+            if(buff[2] != 'R') {
+                //error: format
+            }
+        }
+        else {
+            //error: format
+        }
+    }
+    else {
+        //error: format
+    }
+    if(buf[lastIndex+1] != '|') {
+        // error. pipe missing
+    }
+    
+    char* tempString = (char *) malloc(sizeof(char *) * (lastIndex - 3));
+    for(i = 0; i <= (lastIndex-4); i++) {
+        tempString[i] = buf[i+4];
+    }
+    int length = atoi(tempString);
+    if(buf[lastIndex+1+length+1] != '|') {
+        // error pipe missing
+    }
+    if(buf[strlen(buf) - 1] != '|' {
+        //errpr: pipe missing
+    })
+    if(length != crrtLength) {
+        // error: length incorrect
+    }
+    tempString = (char *) malloc(sizeof(char *) * (length + 4));
+    for(i = 0; i <= (length); i++) {
+        tempString[i] = buf[lastIndex+2+i];
+    }
+    if(strcmp(tempString, expectedStr) != 0) {
+        // error: wrong content
+    }
+}
+
 // the argument we will pass to the connection-handler
 struct connection {
     struct sockaddr_storage addr;
@@ -139,24 +204,28 @@ void *echo(void *arg)
 
     write(c->fd, "REG|13|Knock, knock.|", strlen("REG|13|Knock, knock.|"));
     printf("SENT: %s\n", "REG|13|Knock, knock.|");
-    nread = read(c->fd, buf, 100)
+    nread = read(c->fd, buf, 100);
     if(nread > 0) {
         buf[nread] = '\0';
     }
+    errorChecker(buf, "Who's there?", 12);
+    // use while to wait for the last | or connection to be closed
     printf("READ: %s\n", buf);
     write(c->fd, "REG|4|Who.|", strlen("REG|4|Who.|"));
     printf("SENT: REG|4|Who.|\n");
-    nread = read(c->fd, buf, 100)
+    nread = read(c->fd, buf, 100);
     if(nread > 0) {
         buf[nread] = '\0';
     }
+    errorChecker(buf, "Who who?", 8);
     printf("READ: %s\n", buf);
     write(c->fd, "REG|30|I didn't know you were an owl!|", strlen("REG|30|I didn't know you were an owl!|"));
     printf("SENT: REG|30|I didn't know you were an owl!|\n");
-    nread = read(c->fd, buf, 100)
+    nread = read(c->fd, buf, 100);
     if(nread > 0) {
         buf[nread] = '\0';
     }
+    errorChecker(buf, "Ahh!", 4);
     printf("READ: %s\n", buf);
 
     close(c->fd);
