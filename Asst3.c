@@ -395,7 +395,8 @@ void *echo(void *arg)
     }
 
     printf("%s\n", "Who's there?");
-
+	if(totallines == 0)
+		totallines = 1;
     int setupLineNumber = rand()%totallines;
     if(setupLineNumber % 2 == 0) {
       setupLineNumber = setupLineNumber+1;
@@ -405,6 +406,11 @@ void *echo(void *arg)
     char *setupLine;
     char *punchLine;
     int tracker = 1;
+    if(jokesList == NULL) {
+	setupLine = "Broken Pencil.";
+	punchLine = "Never mind it's pointless.";
+    }
+    else {
     char *jokesCopy = (char *) malloc(sizeof(char *) * ((int) strlen(jokesList) + 1));
     strcpy(jokesCopy, jokesList);
     char* token = strtok(jokesCopy, "\n\f\r");
@@ -423,6 +429,7 @@ void *echo(void *arg)
         }
         tracker++;
         token = strtok(NULL, "\n\r\f"); 
+    } 
     }
     char *jokePointer = (char *) malloc(sizeof(char *) * 500);
     strcpy(jokePointer, "REG|");

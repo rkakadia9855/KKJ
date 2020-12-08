@@ -82,11 +82,11 @@ int main(int argc, char **argv)
     if(nread > 0) {
         buf[nread] = '\0';
     }
-    char *tempErrorString = (char *) malloc(sizeof(char *) * ((int) strlen(tm) + 5));
+    char *tempErrorString = (char *) malloc(sizeof(char *) * ((int) strlen(buf) + 5));
     int tmp = 0;
-    int i = 0; 
+    i = 0; 
     int tracker = 0;
-    for(i = 0; i < (int) strlen(buf); i++) {
+    for(i = 0; i < ((int) strlen(buf) - 2); i++) {
         if(tracker == 2 && buf[i] != '|') {
             tempErrorString[tmp] = buf[i];
             tmp++;
@@ -98,11 +98,12 @@ int main(int argc, char **argv)
     char *sendStr = (char *) malloc(sizeof(char *) * 500);
     strcpy(sendStr, "REG|");
     char *tempLength = (char *) malloc(sizeof(char *) * 500);
-  	sprintf(tempLength, "%d", (int) strlen(tempErrorString));
+  	sprintf(tempLength, "%d",( (int) strlen(tempErrorString) + 6 ));
     tempLength[strlen(tempLength)] = '\0';
     strcat(sendStr, tempLength);
     strcat(sendStr, "|");
     strcat(sendStr, tempErrorString);
+    strcat(sendStr, ", who?");
     strcat(sendStr, "|");
     sendStr[(int) strlen(sendStr)] = '\0';
     printf("SENDING: %s\n", sendStr);
@@ -113,7 +114,7 @@ int main(int argc, char **argv)
     }
     write(sock, "REG", strlen("REG")); 
     write(sock, "|4|", strlen("|4|")); 
-    write(sock, "Ahh!", strlen("Ahh!")); 
+    write(sock, "Ohhk", strlen("Ohhk")); 
     write(sock, "|", strlen("|")); 
     
 	
