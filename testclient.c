@@ -76,7 +76,8 @@ int main(int argc, char **argv)
     if(nread > 0) {
         buf[nread] = '\0';
     }
-    write(sock, "REG|12|Who's there?|", strlen("REG|12|Who's there?|"));
+    write(sock, "REG|12|", strlen("REG|12|"));
+    write(sock, "Who's there?|", strlen("Who's there?|"));
     nread = read(sock, buf, 100);
     if(nread > 0) {
         buf[nread] = '\0';
@@ -86,7 +87,10 @@ int main(int argc, char **argv)
     if(nread > 0) {
         buf[nread] = '\0';
     }
-    write(sock, "REG|4|Ahh!|", strlen("REG|4|Ahh!|"));
+    write(sock, "REG", strlen("REG")); 
+    write(sock, "|4|", strlen("|4|")); 
+    write(sock, "Ahh!", strlen("Ahh!")); 
+    write(sock, "|", strlen("|")); 
     
 	
 	// close the socket
