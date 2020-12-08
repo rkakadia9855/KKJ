@@ -5,6 +5,11 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <ctype.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <errno.h>
 
 #define BACKLOG 1
 
@@ -73,15 +78,6 @@ int errorChecker(char* buf, char* expectedStr, int crrtLength, int readNumber) {
     if(length != crrtLength) {
         return 1;
     }
-  /*  if(readNumber == 3) {
-        if(tempString[strlen(tempString) - 1] != '.' || tempString[strlen(tempString) - 1] != '!' ||
-            tempString[strlen(tempString) - 1] != '?') {
-	printf("temp string is %s\n,", tempString);
-	printf("last is %c\n", tempString[strlen(tempString) - 1]);
-            printf("MISSING PUNC\n");
-            return 0;
-        }
-    } */
     tempString = (char *) malloc(sizeof(char *) * (length + 4));
     for(i = 0; i < (length); i++) {
         tempString[i] = buf[lastIndex+2+i];
@@ -90,21 +86,12 @@ int errorChecker(char* buf, char* expectedStr, int crrtLength, int readNumber) {
 
     if(readNumber == 3) {
 	    if(tempString[strlen(tempString) - 1] != '!' ) {
-//		    printf("got %c\n", tempString[strlen(tempString) - 1]);
 		    if(tempString[strlen(tempString) - 1] != '.') {
                        if(tempString[strlen(tempString) - 1] != '?') {
 				return 0;
 		       }
 		    }
-//		    return 0;
 	    }
-/*	            if(tempString[strlen(tempString) - 1] != '.' || tempString[strlen(tempString) - 1] != '!' ||
-				                tempString[strlen(tempString) - 1] != '?') {
-			            printf("temp string is %s\n", tempString);
-				            printf("last is %c\n", tempString[strlen(tempString) - 1]);
-					                printf("MISSING PUNC\n");
-							            return 0;
-								            } */
 		        } 
     if(strcmp(tempString, expectedStr) != 0) {
         printf("Comparing %s and %s\n", tempString, expectedStr);
@@ -123,16 +110,56 @@ struct connection {
 char *errCodes[18];
 char *errMessage[18];
 int k = 0;
+int totallines = 0;
 
 int server(char *port);
 void *echo(void *arg);
 
 int main(int argc, char **argv)
 {
-	if (argc != 2) {
+	if (argc < 2) {
 		printf("Usage: %s [port]\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
+    if(argc == 3) {
+        int fd = open(argv[2], O_RDONLY);
+        if (fd < 0) {
+            printf("Unable to open the file. Will use default joke.\n");
+        }
+        else {
+            int bytes, pos;
+            int filesize = 0;
+            struct stat st;
+            stat(argv[2], &st);
+            filesize = (int) st.st_size;
+
+            char* buffer = (char *) malloc(sizeof(char) * filesize);
+            char* buffercopy = (char *) malloc(sizeof(char) * filesize);
+            char* jokesList = (char *) malloc(sizeof(char) * filesize);
+            bytes = read(fd, buffer, filesize);
+            if(bytes < 0)
+                printf("error\n");
+            
+            buffercopy = strcpy(buffercopy, buffer);
+                
+            char* token = strtok(buffercopy, "\n\f\r");
+	    int notAdded = 1;
+            strcpy(jokesList, token);
+	    notAdded = 0;
+//            jokesList[strlen(token)] = '\n';
+            int totalwords = 0;
+            while(token != NULL)  {
+                totallines++;
+		if(notAdded)
+                strcat(jokesList, token);
+                jokesList[strlen(jokesList)] = '\n';
+                token = strtok(NULL, "\n\r\f"); 
+		notAdded = 1;
+            }
+	    jokesList[strlen(jokesList)] = '\0';
+        }
+        close(fd);
+    }
 	for(k = 0; k < 18; k++) {
 		errCodes[k] = (char *) malloc(sizeof(char *) * 10);
 	}
@@ -176,7 +203,7 @@ strcpy(errMessage[15], "message 5 content was not correct (i.e. missing punctuat
 strcpy(errMessage[16], "message 5 length value was incorrect (i.e. should be the length of the message)");
 strcpy(errMessage[17], "message 5 format was broken (did not include a message type, missing or too many \'|\')");
 
-    (void) server(argv[1]);
+  //  (void) server(argv[1]);
     for(k = 0; k < 18; k++) {
         free(errCodes[k]);
     }
