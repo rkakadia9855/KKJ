@@ -111,6 +111,7 @@ char *errCodes[18];
 char *errMessage[18];
 int k = 0;
 int totallines = 0;
+char* jokesList;
 
 int server(char *port);
 void *echo(void *arg);
@@ -135,7 +136,7 @@ int main(int argc, char **argv)
 
             char* buffer = (char *) malloc(sizeof(char) * filesize);
             char* buffercopy = (char *) malloc(sizeof(char) * filesize);
-            char* jokesList = (char *) malloc(sizeof(char) * filesize);
+            jokesList = (char *) malloc(sizeof(char) * filesize);
             bytes = read(fd, buffer, filesize);
             if(bytes < 0)
                 printf("error\n");
@@ -150,14 +151,14 @@ int main(int argc, char **argv)
             int totalwords = 0;
             while(token != NULL)  {
                 totallines++;
-		if(notAdded)
-                strcat(jokesList, token);
-                jokesList[strlen(jokesList)] = '\n';
-                token = strtok(NULL, "\n\r\f"); 
-		notAdded = 1;
+		        if(notAdded)
+                    strcat(jokesList, token);
+                    jokesList[strlen(jokesList)] = '\n';
+                    token = strtok(NULL, "\n\r\f"); 
+                     notAdded = 1;
+                }
+	            jokesList[strlen(jokesList)] = '\0';
             }
-	    jokesList[strlen(jokesList)] = '\0';
-        }
         close(fd);
     }
 	for(k = 0; k < 18; k++) {
@@ -203,7 +204,7 @@ strcpy(errMessage[15], "message 5 content was not correct (i.e. missing punctuat
 strcpy(errMessage[16], "message 5 length value was incorrect (i.e. should be the length of the message)");
 strcpy(errMessage[17], "message 5 format was broken (did not include a message type, missing or too many \'|\')");
 
-  //  (void) server(argv[1]);
+    (void) server(argv[1]);
     for(k = 0; k < 18; k++) {
         free(errCodes[k]);
     }
@@ -395,13 +396,49 @@ void *echo(void *arg)
 
     printf("%s\n", "Who's there?");
 
-    write(c->fd, "REG|4|Who.|", strlen("REG|4|Who.|"));
-    printf("Who.\n");
+    int setupLineNumber = rand()%totallines;
+    if(setupLineNumber % 2 == 0) {
+      setupLineNumber = setupLineNumber+1;
+    }
+    int punchLineNumber = setupLineNumber+1;
+
+    char *setupLine;
+    char *punchLine;
+    int tracker = 1;
+    char *jokesCopy = (char *) malloc(sizeof(char *) * ((int) strlen(jokesList) + 1));
+    strcpy(jokesCopy, jokesList);
+    char* token = strtok(jokesCopy, "\n\f\r");
+
+    while(token != NULL)  {
+        if(tracker == setupLineNumber) {
+            setupLine = (char *) malloc(sizeof(char *) * ((int) strlen(token) + 5));
+            strcpy(setupLine, token);
+            setupLine[strlen(token)] = '\0';
+        }
+        if(tracker == punchLineNumber) {
+            punchLine = (char *) malloc(sizeof(char *) * ((int) strlen(token) + 5));
+            strcpy(punchLine, token);
+            punchLine[strlen(token)] = '\0';
+            break;
+        }
+        tracker++;
+        token = strtok(NULL, "\n\r\f"); 
+    }
+    char *jokePointer = (char *) malloc(sizeof(char *) * 500);
+    strcpy(jokePointer, "REG|");
+    char *tempLength = (char *) malloc(sizeof(char *) * 500);
+    sprintf(tempLength, "%d", (int) strlen(setupLine));
+    strcat(jokePointer, tempLength);
+    strcat(jokePointer, "|");
+    strcat(jokePointer, setupLine);
+    strcat(jokePointer, "|");
+    write(c->fd, jokePointer, strlen(jokePointer));
+    printf("%s\n", setupLine);
 
     tmTr = 0;
     bzero(tm, 100);
     pipeCount = 0;
-    contentLength = 9;
+    contentLength = atoi(tempLength);
 
     while(1) {
         bzero(buf, 100);
@@ -430,7 +467,12 @@ void *echo(void *arg)
     }
    // printf("tm: %s\b", tm);
     tm[tmTr] = '\0';
-    errValue = errorChecker(tm, "Who, who?", 9, 2);
+    char *tempErrorString = (char *) malloc(sizeof(char *) * 500);
+    strcpy(tempErrorString, setupLine);
+    tempErrorString[(int) strlen(tempErrorString) - 1] = '\0'; 
+    strcat(tempErrorString, ", who?");
+    tempErrorString[strlen(tempErrorString)] = '\0';
+    errValue = errorChecker(tm, tempErrorString, (int) strlen(tempErrorString), 2);
 
    if(errValue == 0) {
         write(c->fd, "ERR|M3CT|", strlen("ERR|M3CT|"));
@@ -456,15 +498,26 @@ void *echo(void *arg)
     else if(errValue == 10) {
         //err message sent from client
     }
+    printf("%s\n", tempErrorString);
+    free(tempErrorString);
+    free(tempLength);
+    free(jokePointer);
 
-    printf("%s\n", "Who, who?");
+    jokePointer = (char *) malloc(sizeof(char *) * 500);
+    strcpy(jokePointer, "REG|");
+    tempLength = (char *) malloc(sizeof(char *) * 500);
+    sprintf(tempLength, "%d", (int) strlen(punchLine));
+    strcat(jokePointer, tempLength);
+    strcat(jokePointer, "|");
+    strcat(jokePointer, punchLine);
+    strcat(jokePointer, "|");
+    write(c->fd, jokePointer, strlen(jokePointer));
+    printf("%s\n", punchLine);
 
-    write(c->fd, "REG|30|I didn't know you were an owl!|", strlen("REG|30|I didn't know you were an owl!|"));
-    printf("I didn't know you were an owl!\n");
     tmTr = 0;
     bzero(tm, 100);
     pipeCount = 0;
-    contentLength = 5;
+    contentLength = atoi(tempLength);
 
     while(1) {
         bzero(buf, 100);
@@ -493,7 +546,20 @@ void *echo(void *arg)
     }
    // printf("tm: %s\b", tm);
     tm[tmTr] = '\0';
-    errValue = errorChecker(tm, "Argh!", 5, 3);
+    tempErrorString = (char *) malloc(sizeof(char *) * ((int) strlen(tm) + 5));
+    int tmp = 0;
+    int i = 0; 
+    tracker = 0;
+    for(i = 0; i < tmTr; i++) {
+        if(tracker == 2 && tm[i] != '|') {
+            tempErrorString[tmp] = tm[i];
+            tmp++;
+        }
+        if(tm[i] == '|') 
+            tracker++;
+    }
+    tempErrorString[tmp] = '\0';
+    errValue = errorChecker(tm, tempErrorString, tmp, 3);
     if(errValue == 0) {
         write(c->fd, "ERR|M5CT|", strlen("ERR|M5CT|"));
         printf("%s\n", errMessage[15]);
@@ -518,7 +584,7 @@ void *echo(void *arg)
     else if(errValue == 10) {
         //err message sent from client
     }
-    printf("%s\n", "Argh!");
+    printf("%s\n", tempErrorString);
 
     close(c->fd);
     free(c);

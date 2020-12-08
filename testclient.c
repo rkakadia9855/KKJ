@@ -82,7 +82,31 @@ int main(int argc, char **argv)
     if(nread > 0) {
         buf[nread] = '\0';
     }
-    write(sock, "REG|9|Who, who?|", strlen("REG|9|Who, who?|"));
+    char *tempErrorString = (char *) malloc(sizeof(char *) * ((int) strlen(tm) + 5));
+    int tmp = 0;
+    int i = 0; 
+    int tracker = 0;
+    for(i = 0; i < (int) strlen(buf); i++) {
+        if(tracker == 2 && buf[i] != '|') {
+            tempErrorString[tmp] = buf[i];
+            tmp++;
+        }
+        if(buf[i] == '|') 
+            tracker++;
+    }
+    tempErrorString[tmp] = '\0';
+    char *sendStr = (char *) malloc(sizeof(char *) * 500);
+    strcpy(sendStr, "REG|");
+    char *tempLength = (char *) malloc(sizeof(char *) * 500);
+  	sprintf(tempLength, "%d", (int) strlen(tempErrorString));
+    tempLength[strlen(tempLength)] = '\0';
+    strcat(sendStr, tempLength);
+    strcat(sendStr, "|");
+    strcat(sendStr, tempErrorString);
+    strcat(sendStr, "|");
+    sendStr[(int) strlen(sendStr)] = '\0';
+    printf("SENDING: %s\n", sendStr);
+    write(sock, sendStr, strlen(sendStr));
     nread = read(sock, buf, 100);
     if(nread > 0) {
         buf[nread] = '\0';
