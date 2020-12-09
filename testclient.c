@@ -35,7 +35,7 @@ int main(int argc, char **argv)
 	// hints   - our additional requirements
 	// address_list - the list of results
 
-	error = getaddrinfo(argv[1], argv[2], &hints, &address_list);
+	error = getaddrinfo(NULL, argv[1], &hints, &address_list);
 	if (error) {
 		fprintf(stderr, "%s", gai_strerror(error));
 		exit(EXIT_FAILURE);
@@ -62,7 +62,7 @@ int main(int argc, char **argv)
 	
 	// if we exited the loop without opening a socket and connecting, halt
 	if (addr == NULL) {
-		fprintf(stderr, "Could not connect to %s:%s\n", argv[1], argv[2]);
+		fprintf(stderr, "Could not connect to %s\n", argv[1]);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -77,7 +77,7 @@ int main(int argc, char **argv)
         buf[nread] = '\0';
     }
     write(sock, "REG|12|", strlen("REG|12|"));
-    write(sock, "Who's there?|", strlen("Who's there?|"));
+    write(sock, "Who's thdsere?|", strlen("Who's thdsere?|"));
     nread = read(sock, buf, 100);
     if(nread > 0) {
         buf[nread] = '\0';

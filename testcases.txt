@@ -1,0 +1,50 @@
+Testcase 1:
+Testing for error M1CT: Receiving something else instead of "Who's there?"
+
+Testcase 2:
+Testing for error M5CT: Missing punctuation in expression of annoyance
+
+Testcase 3:
+Testing for error M3CT: Receiving something else instead of "setupline, who?"
+
+Testcase 4:
+Testing for error M5LN: Receiving wrong length value
+
+Testcase 5:
+Testing for error M3FT: Receiving wrong message format
+
+Testcase 6:
+Sending 1 byte at a time from the client side.
+
+Testcase 7:
+Skippig the third pipe from the client side and testing what read does
+
+Testcase 8: 
+Receiving error message from the client side
+
+Testcase 9:
+Testing if error message are sent in correct hierarchy
+
+Testcase 10: 
+Executing out the KKJ protocol with default joke
+
+Testcase 10: 
+Executing out the KKJ protocol with a random joke from the joke file that was passed
+
+Content of jokes file used to test:
+------------------------------------
+Who.
+I didn't know you were an owl!
+
+Dijkstra.
+That path was taking too long, so let myself in.
+
+Turnip.
+Turnip the heat, it's cold in here! Want another?
+
+Tank.
+You're Welcome.
+
+Broken Pencil.
+Nevermind it's pointless.
+---------------------------------------
